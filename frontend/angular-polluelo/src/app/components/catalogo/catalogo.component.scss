@@ -1,0 +1,86 @@
+/* ---- Toolbar -------------------------------------------------------------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.search { position: relative; flex: 1; min-width: 240px; }
+.search-ico {
+  position: absolute;
+  left: .7rem; top: 50%;
+  transform: translateY(-50%);
+  color: var(--faint);
+  font-size: .95rem;
+  pointer-events: none;
+}
+.search-input { padding-left: 1.9rem; }
+
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.chip {
+  font-family: var(--font-sans);
+  font-size: .8rem;
+  font-weight: 500;
+  padding: .35rem .7rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .14s, border-color .14s, background .14s;
+}
+.chip:hover { color: var(--ink); border-color: var(--faint); }
+.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ---- Meta ----------------------------------------------------------------- */
+.table-meta {
+  font-size: .8rem;
+  margin-bottom: .6rem;
+  padding-left: .1rem;
+}
+.table-meta .mono { color: var(--ink); font-weight: 500; }
+
+.loading { padding: 3rem; display: grid; place-items: center; }
+
+/* ---- Tabla del catálogo --------------------------------------------------- */
+.table-wrap { overflow-x: auto; }
+
+.catalogo tbody tr.agotado td:not(:last-child) { opacity: .5; }
+
+.prod-nombre { font-weight: 500; color: var(--ink); }
+.prod-marca { font-size: .76rem; margin-top: .05rem; }
+
+.sku { font-size: .8rem; color: var(--ink-soft); }
+.precio { font-size: .88rem; font-weight: 500; }
+
+.stock-lbl {
+  margin-left: .4rem;
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.stock-lbl.bajo { color: var(--creado); }
+.stock-lbl.agotado { color: var(--rechazado); }
+
+/* ---- Toast ---------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: .55rem 1rem;
+  border-radius: var(--r-sm);
+  font-size: .8rem;
+  box-shadow: var(--shadow-pop);
+  animation: toast-in .18s ease;
+  z-index: var(--z-toast);
+}
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+@media (max-width: 620px) {
+  .toolbar { align-items: stretch; }
+}

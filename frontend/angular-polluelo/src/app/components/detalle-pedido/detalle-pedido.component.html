@@ -1,0 +1,83 @@
+<div class="container">
+  <a routerLink="/mis-pedidos" class="volver">← Pedidos</a>
+
+  @if (pedido(); as p) {
+    <div class="detalle-head">
+      <div>
+        <h1 class="mono ped-id">#{{ p.id }}</h1>
+        <p class="sub">
+          {{ p.cliente }} · <span class="mono">{{ p.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+        </p>
+      </div>
+      <span [class]="claseEstado(p.estado)">{{ etiqueta(p.estado) }}</span>
+    </div>
+
+    <!-- Pipeline del flujo por eventos (Kafka) -->
+    <div class="panel pipeline" [attr.data-estado]="p.estado">
+      <div class="step done">
+        <span class="dot"></span>
+        <div class="step-txt">
+          <strong>Creado</strong>
+          <span class="mono evt">PEDIDO_CREADO</span>
+        </div>
+      </div>
+      <div class="rail"></div>
+      <div class="step"
+           [class.active]="p.estado === 'CREADO'"
+           [class.done]="p.estado === 'CONFIRMADO'"
+           [class.fail]="p.estado === 'RECHAZADO'">
+        <span class="dot"></span>
+        <div class="step-txt">
+          @switch (p.estado) {
+            @case ('CREADO')     { <strong>Validando stock…</strong><span class="mono evt">MCSV Inventario</span> }
+            @case ('CONFIRMADO') { <strong>Confirmado</strong><span class="mono evt">STOCK_ACTUALIZADO</span> }
+            @case ('RECHAZADO')  { <strong>Rechazado</strong><span class="mono evt">PEDIDO_RECHAZADO</span> }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje contextual -->
+    @if (p.estado === 'CREADO') {
+      <div class="aviso aviso-creado"><span class="spinner sm"></span><span>El inventario está validando el stock. El estado se actualizará automáticamente.</span></div>
+    } @else if (p.estado === 'RECHAZADO') {
+      <div class="aviso aviso-rechazado"><strong>Rechazado.</strong> {{ p.motivoRechazo }}</div>
+    }
+
+    <!-- Líneas del pedido -->
+    <div class="panel table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="text-right">Precio unit.</th>
+            <th class="text-right">Cant.</th>
+            <th class="text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of p.items; track item.productoId) {
+            <tr>
+              <td>{{ item.nombreProducto }}</td>
+              <td class="text-right"><span class="mono">S/ {{ item.precioUnitario.toFixed(2) }}</span></td>
+              <td class="text-right"><span class="mono">{{ item.cantidad }}</span></td>
+              <td class="text-right"><span class="mono">S/ {{ item.subtotal.toFixed(2) }}</span></td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="text-right total-lbl">Total</td>
+            <td class="text-right"><span class="mono total">S/ {{ p.total.toFixed(2) }}</span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  } @else {
+    <div class="panel empty-state">
+      <div class="icon">404</div>
+      <p>No se encontró el pedido <span class="mono">#{{ id() }}</span>.</p>
+      <a routerLink="/mis-pedidos" class="btn btn-outline btn-sm" style="margin-top:1rem">Ver pedidos</a>
+    </div>
+  }
+</div>

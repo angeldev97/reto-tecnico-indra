@@ -1,0 +1,102 @@
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-strong);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.topbar-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+/* Marca */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-family: var(--font-mono);
+  font-size: .92rem;
+  letter-spacing: -0.02em;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--r-xs);
+  font-size: .9rem;
+}
+.brand-text { color: var(--ink); font-weight: 500; }
+.brand-sep { color: var(--faint); }
+
+/* Navegación por pestañas (subrayado activo) */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  height: 100%;
+}
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  height: 100%;
+  padding: 0 .8rem;
+  font-weight: 500;
+  font-size: .88rem;
+  color: var(--muted);
+  transition: color .14s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: .8rem; right: .8rem; bottom: 0;
+  height: 2px;
+  background: transparent;
+  transition: background .14s;
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active { color: var(--ink); }
+.nav-link.active::after { background: var(--ink); }
+
+.nav-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 .3rem;
+  display: inline-grid;
+  place-items: center;
+  background: var(--ink);
+  color: #fff;
+  font-size: .7rem;
+  border-radius: 999px;
+}
+
+/* Etiqueta de entorno */
+.env-tag {
+  margin-left: auto;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  padding: .18rem .45rem;
+  border-radius: var(--r-xs);
+}
+
+@media (max-width: 560px) {
+  .topbar-inner { gap: 1rem; }
+  .brand-text { display: none; }
+  .nav-link { padding: 0 .55rem; font-size: .82rem; }
+  .nav-link::after { left: .55rem; right: .55rem; }
+}

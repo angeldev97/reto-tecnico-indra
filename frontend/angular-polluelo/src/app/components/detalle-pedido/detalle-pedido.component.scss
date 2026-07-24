@@ -1,0 +1,107 @@
+.volver {
+  display: inline-block;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 1rem;
+}
+.volver:hover { color: var(--ink); }
+
+.detalle-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.ped-id { font-size: 1.6rem; font-weight: 500; }
+.detalle-head .sub { color: var(--muted); font-size: .88rem; margin-top: .25rem; }
+
+/* ---- Pipeline del flujo por eventos --------------------------------------- */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1rem;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+.step .dot {
+  width: .9rem; height: .9rem;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+  flex-shrink: 0;
+}
+.step-txt { display: flex; flex-direction: column; line-height: 1.35; }
+.step-txt strong { font-size: .88rem; font-weight: 550; color: var(--ink-soft); }
+.evt { font-size: .68rem; color: var(--faint); }
+
+.rail {
+  flex: 1;
+  height: 2px;
+  background: var(--border-strong);
+  margin: 0 1rem;
+  min-width: 30px;
+}
+
+/* Estados de cada paso */
+.step.done .dot { background: var(--confirmado-dot); border-color: var(--confirmado-dot); }
+.step.done .step-txt strong { color: var(--ink); }
+.step.fail .dot { background: var(--rechazado-dot); border-color: var(--rechazado-dot); }
+.step.fail .step-txt strong { color: var(--rechazado); }
+.step.active .dot {
+  background: var(--creado-dot);
+  border-color: var(--creado-dot);
+  animation: pulse-ring 1.3s ease-in-out infinite;
+}
+.step.active .step-txt strong { color: var(--creado); }
+
+/* Riel coloreado según desenlace */
+.pipeline[data-estado="CONFIRMADO"] .rail { background: var(--confirmado-dot); }
+.pipeline[data-estado="RECHAZADO"] .rail { background: var(--rechazado-dot); }
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--creado-dot) 40%, transparent); }
+  50%      { box-shadow: 0 0 0 5px color-mix(in srgb, var(--creado-dot) 0%, transparent); }
+}
+
+/* ---- Aviso ---------------------------------------------------------------- */
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .8rem 1.1rem;
+  border-radius: var(--r);
+  margin-bottom: 1rem;
+  font-size: .86rem;
+}
+.aviso-creado    { background: var(--creado-bg);    color: var(--creado); }
+.aviso-rechazado { background: var(--rechazado-bg); color: var(--rechazado); }
+.spinner.sm {
+  width: 1.05rem; height: 1.05rem;
+  border-width: 2px;
+  border-top-color: var(--creado);
+  border-color: color-mix(in srgb, var(--creado) 25%, transparent);
+  border-top-color: var(--creado);
+  flex-shrink: 0;
+}
+
+/* ---- Líneas --------------------------------------------------------------- */
+.table-wrap { overflow-x: auto; }
+.table tfoot td {
+  border-top: 2px solid var(--border-strong);
+  border-bottom: none;
+  padding-top: .85rem;
+}
+.total-lbl { font-weight: 600; color: var(--ink); }
+.total { font-size: 1.05rem; font-weight: 600; }
+
+@media (max-width: 620px) {
+  .pipeline { flex-direction: column; align-items: stretch; gap: .5rem; }
+  .rail { width: 2px; height: 24px; min-width: 0; margin: 0 0 0 .4rem; }
+}

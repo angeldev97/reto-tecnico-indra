@@ -1,0 +1,53 @@
+<div class="container">
+  <div class="page-head">
+    <h1>Pedidos</h1>
+    <p class="sub">Pedidos registrados en MCSV Pedidos. El estado se actualiza en vivo al resolverse el stock.</p>
+  </div>
+
+  @if (pedidos().length === 0) {
+    <div class="panel empty-state">
+      <div class="icon">[ ]</div>
+      <p>Aún no se ha registrado ningún pedido.</p>
+      <a routerLink="/catalogo" class="btn btn-outline btn-sm" style="margin-top:1rem">Ir al catálogo</a>
+    </div>
+  } @else {
+    <div class="panel table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th class="text-right">Ítems</th>
+            <th class="text-right">Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of pedidos(); track p.id) {
+            <tr>
+              <td><span class="mono id">#{{ p.id }}</span></td>
+              <td>{{ p.cliente }}</td>
+              <td><span class="mono muted fecha">{{ p.fecha | date:'dd/MM/yy HH:mm' }}</span></td>
+              <td class="text-right mono">{{ totalUnidades(p.items) }}</td>
+              <td class="text-right"><span class="mono total">S/ {{ p.total.toFixed(2) }}</span></td>
+              <td><span [class]="claseEstado(p.estado)">{{ etiqueta(p.estado) }}</span></td>
+              <td class="text-right">
+                <a [routerLink]="['/pedidos', p.id]" class="btn btn-outline btn-sm">Detalle →</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="leyenda">
+      <span class="status status-creado">Creado</span> <span class="muted">pendiente de validación</span>
+      <span class="sep">·</span>
+      <span class="status status-confirmado">Confirmado</span> <span class="muted">stock validado</span>
+      <span class="sep">·</span>
+      <span class="status status-rechazado">Rechazado</span> <span class="muted">sin stock</span>
+    </div>
+  }
+</div>

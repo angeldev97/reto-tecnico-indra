@@ -1,0 +1,109 @@
+<div class="container">
+  <div class="page-head">
+    <h1>Catálogo de productos</h1>
+    <p class="sub">Inventario disponible vía MCSV Inventario. Ordena por columna y agrega al pedido.</p>
+  </div>
+
+  <!-- Toolbar: búsqueda + filtro categoría -->
+  <div class="toolbar">
+    <div class="search">
+      <span class="search-ico mono" aria-hidden="true">/</span>
+      <input
+        type="search"
+        class="input search-input"
+        placeholder="Buscar por nombre, marca o SKU…"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        aria-label="Buscar productos"
+      />
+    </div>
+
+    <div class="chips">
+      @for (cat of categorias(); track cat) {
+        <button
+          class="chip"
+          [class.active]="categoria() === cat"
+          (click)="filtrar(cat)"
+        >{{ cat }}</button>
+      }
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="panel loading"><span class="spinner"></span></div>
+  } @else {
+    <div class="table-meta">
+      <span class="mono">{{ productos().length }}</span>
+      <span class="muted"> / {{ totalCatalogo() }} productos</span>
+    </div>
+
+    <div class="panel table-wrap">
+      <table class="table catalogo">
+        <thead>
+          <tr>
+            <th class="th-sort" [class.active]="campo() === 'nombre'" (click)="ordenar('nombre')">
+              Producto <span class="arrow">{{ flecha('nombre') }}</span>
+            </th>
+            <th>SKU</th>
+            <th class="th-sort" [class.active]="campo() === 'categoria'" (click)="ordenar('categoria')">
+              Categoría <span class="arrow">{{ flecha('categoria') }}</span>
+            </th>
+            <th class="th-sort" [class.active]="campo() === 'stock'" (click)="ordenar('stock')">
+              Stock <span class="arrow">{{ flecha('stock') }}</span>
+            </th>
+            <th class="th-sort text-right" [class.active]="campo() === 'precio'" (click)="ordenar('precio')">
+              Precio <span class="arrow">{{ flecha('precio') }}</span>
+            </th>
+            <th class="text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of productos(); track p.id) {
+            <tr [class.agotado]="p.stock <= 0">
+              <td>
+                <div class="prod-nombre">{{ p.nombre }}</div>
+                <div class="prod-marca muted">{{ p.marca }}</div>
+              </td>
+              <td><span class="mono sku">{{ p.sku }}</span></td>
+              <td class="muted">{{ p.categoria }}</td>
+              <td>
+                <span class="stock-dot" [class]="estadoStock(p.stock)"></span>
+                <span class="mono">{{ p.stock }}</span>
+                @if (estadoStock(p.stock) === 'bajo') { <span class="stock-lbl bajo">bajo</span> }
+                @else if (estadoStock(p.stock) === 'agotado') { <span class="stock-lbl agotado">agotado</span> }
+              </td>
+              <td class="text-right"><span class="mono precio">S/ {{ p.precio.toFixed(2) }}</span></td>
+              <td class="text-right">
+                <button
+                  class="btn btn-sm"
+                  [class.btn-primary]="enCarrito(p.id) === 0 && p.stock > 0"
+                  [class.btn-outline]="enCarrito(p.id) > 0"
+                  [disabled]="p.stock <= 0"
+                  (click)="agregar(p)"
+                >
+                  @if (p.stock <= 0) { Sin stock }
+                  @else if (enCarrito(p.id) > 0) { En pedido · {{ enCarrito(p.id) }} }
+                  @else { + Agregar }
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="icon">[ ]</div>
+                  <p>Sin resultados para los filtros actuales.</p>
+                  <button class="btn btn-outline btn-sm" style="margin-top:1rem" (click)="limpiar()">Limpiar filtros</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (aviso()) {
+  <div class="toast mono" role="status">✓ {{ aviso() }}</div>
+}

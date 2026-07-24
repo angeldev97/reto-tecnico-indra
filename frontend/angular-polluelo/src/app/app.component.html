@@ -1,0 +1,25 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <a routerLink="/catalogo" class="brand">
+      <span class="brand-mark">◧</span>
+      <span class="brand-text">pedidos<span class="brand-sep">::</span>inventario</span>
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/catalogo" routerLinkActive="active" class="nav-link">Catálogo</a>
+      <a routerLink="/crear-pedido" routerLinkActive="active" class="nav-link">
+        Crear pedido
+        @if (itemsCarrito() > 0) {
+          <span class="nav-count mono">{{ itemsCarrito() }}</span>
+        }
+      </a>
+      <a routerLink="/mis-pedidos" routerLinkActive="active" class="nav-link">Pedidos</a>
+    </nav>
+
+    <span class="env-tag mono">API</span>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>

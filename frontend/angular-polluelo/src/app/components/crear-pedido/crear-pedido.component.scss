@@ -1,0 +1,67 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.table-wrap { overflow-x: auto; }
+.text-center { text-align: center; }
+
+.li-nombre { font-weight: 500; color: var(--ink); }
+.li-meta { font-size: .78rem; margin-top: .1rem; }
+.li-alerta {
+  margin-top: .35rem;
+  font-size: .76rem;
+  font-weight: 500;
+  color: var(--creado);
+}
+.sku { font-size: .8rem; color: var(--ink-soft); }
+.subtotal { font-weight: 500; }
+.quitar { color: var(--rechazado); }
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: .15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: .1rem;
+}
+.stepper .btn { padding: .2rem .5rem; font-size: 1rem; line-height: 1; }
+.cant { min-width: 26px; text-align: center; font-weight: 500; }
+
+/* Resumen */
+.resumen {
+  padding: 1.25rem;
+  position: sticky;
+  top: 76px;
+}
+.resumen-tit { font-size: 1rem; margin-bottom: 1rem; }
+.campo { margin-bottom: 1.25rem; }
+
+.totales { margin: 0 0 1.1rem; }
+.totales > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: .3rem 0;
+  font-size: .85rem;
+}
+.totales dt, .totales dd { margin: 0; }
+.total-row {
+  border-top: 1px solid var(--border);
+  margin-top: .3rem;
+  padding-top: .7rem !important;
+  font-weight: 600;
+}
+.total-row dt { color: var(--ink); }
+.total { font-size: 1.25rem; font-weight: 600; }
+
+.nota { font-size: .78rem; margin-top: 1rem; line-height: 1.5; }
+.nota .status { vertical-align: middle; }
+
+@media (max-width: 780px) {
+  .layout { grid-template-columns: 1fr; }
+  .resumen { position: static; }
+}

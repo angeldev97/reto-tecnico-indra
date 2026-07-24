@@ -1,0 +1,84 @@
+<div class="container">
+  <div class="page-head">
+    <h1>Crear pedido</h1>
+    <p class="sub">Revisa las líneas, indica el cliente y confirma. El inventario validará el stock de forma asíncrona.</p>
+  </div>
+
+  @if (items().length === 0) {
+    <div class="panel empty-state">
+      <div class="icon">[ ]</div>
+      <p>No hay líneas en el pedido.</p>
+      <a routerLink="/catalogo" class="btn btn-outline btn-sm" style="margin-top:1rem">Ir al catálogo</a>
+    </div>
+  } @else {
+    <div class="layout">
+      <!-- Líneas -->
+      <section class="panel table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-right">Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.producto.id) {
+              <tr>
+                <td>
+                  <div class="li-nombre">{{ item.producto.nombre }}</div>
+                  <div class="li-meta muted">
+                    {{ item.producto.marca }} · <span class="mono">S/ {{ item.producto.precio.toFixed(2) }}</span> c/u
+                    · <span class="mono">{{ item.producto.stock }}</span> en stock
+                  </div>
+                  @if (item.cantidad > item.producto.stock) {
+                    <div class="li-alerta">⚠ Supera el stock disponible (<span class="mono">{{ item.producto.stock }}</span>) — el inventario podría rechazarlo</div>
+                  }
+                </td>
+                <td><span class="mono sku">{{ item.producto.sku }}</span></td>
+                <td>
+                  <div class="stepper">
+                    <button class="btn btn-ghost btn-sm" [disabled]="item.cantidad <= 1" (click)="cambiarCantidad(item.producto.id, item.cantidad - 1)" aria-label="Disminuir">−</button>
+                    <span class="cant mono">{{ item.cantidad }}</span>
+                    <button class="btn btn-ghost btn-sm" (click)="cambiarCantidad(item.producto.id, item.cantidad + 1)" aria-label="Aumentar">+</button>
+                  </div>
+                </td>
+                <td class="text-right"><span class="mono subtotal">S/ {{ (item.producto.precio * item.cantidad).toFixed(2) }}</span></td>
+                <td class="text-right">
+                  <button class="btn btn-ghost btn-sm quitar" (click)="quitar(item.producto.id)" aria-label="Quitar">✕</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Resumen -->
+      <aside class="panel resumen">
+        <h3 class="resumen-tit">Resumen</h3>
+
+        <div class="campo">
+          <label for="cliente">Cliente</label>
+          <input id="cliente" class="input" type="text" placeholder="Nombre del cliente" [(ngModel)]="cliente" maxlength="60" />
+        </div>
+
+        <dl class="totales">
+          <div><dt class="muted">Líneas</dt><dd class="mono">{{ items().length }}</dd></div>
+          <div><dt class="muted">Unidades</dt><dd class="mono">{{ unidades() }}</dd></div>
+          <div class="total-row"><dt>Total</dt><dd class="mono total">S/ {{ total().toFixed(2) }}</dd></div>
+        </dl>
+
+        <button class="btn btn-primary btn-block" [disabled]="enviando()" (click)="confirmar()">
+          {{ enviando() ? 'Enviando…' : 'Confirmar pedido' }}
+        </button>
+
+        <p class="nota muted">
+          Al confirmar, el pedido se registra como <span class="status status-creado">Creado</span>
+          y publica <span class="mono">PEDIDO_CREADO</span>.
+        </p>
+      </aside>
+    </div>
+  }
+</div>
