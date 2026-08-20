@@ -1,80 +1,70 @@
 # mcsv-inventario
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Microservicio dueño del catálogo de productos y del stock. Valida y descuenta
+inventario cuando se crea un pedido, y expone el catálogo de solo lectura —
+tanto a través de Kong (`GET /api/productos` del frontend) como a
+`mcsv-pedidos`, que lo consulta de forma síncrona para resolver el precio de
+cada item al crear un pedido. Java 21 / Quarkus 3.37.4.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+Ver también: [README raíz](../README.md) · [docs/ARQUITECTURA.md](../docs/ARQUITECTURA.md)
 
-## Running the application in dev mode
+## Paquete hexagonal
 
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./mvnw quarkus:dev
+```
+src/main/java/com/reto/inventario/
+├── domain/
+│   ├── model/            Producto, MovimientoInventario, TipoMovimiento (POJOs puros)
+│   ├── port/in/           ProcesarPedidoCreadoUseCase, ConsultarProductosUseCase
+│   ├── port/out/          ProductoRepository, MovimientoInventarioRepository, InventarioEventPublisher
+│   └── exception/        ProductoNoEncontradoException
+├── application/
+│   ├── ProcesarPedidoCreadoService.java   caso de uso con la lógica de negocio más rica del sistema
+│   └── ConsultarProductosService.java
+└── infrastructure/adapter/
+    ├── in/rest/           ProductoResource (GET /productos)
+    ├── in/messaging/      PedidoCreadoConsumer (@Incoming pedido-creado-in)
+    ├── out/persistence/   ProductoEntity, MovimientoInventarioEntity (Panache) + repos
+    └── out/messaging/     KafkaInventarioEventPublisher (stock-actualizado-out, pedido-rechazado-out)
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+`ProcesarPedidoCreadoService` es el corazón del servicio: por cada evento
+`pedido-creado`, valida en una primera pasada si **todos** los items tienen
+stock suficiente; si alguno no lo tiene, rechaza el pedido completo sin tocar
+inventario. Si todos pasan, descuenta stock, registra un
+`MovimientoInventario` por item y publica `stock-actualizado`. Detalle
+completo en [docs/ARQUITECTURA.md](../docs/ARQUITECTURA.md#decisiones-de-diseño-y-trade-offs).
 
-## Packaging and running the application
+## Endpoints
 
-The application can be packaged using:
+- `GET /productos` — lista el catálogo completo
+- `GET /productos/{id}` — detalle de un producto (404 si no existe)
+- Swagger UI: `/q/swagger-ui`
 
-```shell script
-./mvnw package
+## Eventos Kafka
+
+| Dirección | Canal | Topic | Evento |
+|---|---|---|---|
+| Entrada | `pedido-creado-in` | `pedido-creado` | `PedidoCreadoEvent` |
+| Salida | `stock-actualizado-out` | `stock-actualizado` | `StockActualizadoEvent` |
+| Salida | `pedido-rechazado-out` | `pedido-rechazado` | `PedidoRechazadoEvent` |
+
+## Cómo correrlo
+
+**En Docker** (como parte del stack completo, ver [README raíz](../README.md)):
+
+```bash
+docker compose up -d --build mcsv-inventario
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+**En modo desarrollo local** (requiere `inventario-db` y `kafka` levantados vía `docker compose up -d inventario-db kafka`):
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+mvn quarkus:dev -Dquarkus.http.port=8081
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+## Configuración relevante
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/mcsv-inventario-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplified JPA/Hibernate data access layer with active record and repository patterns
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Flyway ([guide](https://quarkus.io/guides/flyway)): Handle your database schema migrations
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Generate OpenAPI schemas and serve Swagger UI for REST API documentation
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+| Propiedad | `application.properties` (dev local) | Override en Docker (env var) |
+|---|---|---|
+| Datasource | `jdbc:postgresql://localhost:5433/inventario` | `QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://inventario-db:5432/inventario` |
+| Kafka | `localhost:9092` | `KAFKA_BOOTSTRAP_SERVERS=kafka:19092` |

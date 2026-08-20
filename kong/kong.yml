@@ -1,0 +1,42 @@
+# Config declarativa de Kong (modo DB-less: sin Postgres propio, sin Admin API para
+# cambios en caliente — el enrutamiento vive versionado en este archivo).
+#
+# Kong solo enruta y traduce paths; no compone datos de mcsv-pedidos y mcsv-inventario
+# (eso es lo que hacía el antiguo api-gateway y por eso se eliminó: un API Gateway no
+# debería tener lógica de negocio). `strip_path: true` quita el prefijo público
+# ("/api/pedidos", "/api/productos") antes de reenviar, y la URL de cada `service` ya
+# incluye el path interno real del microservicio, por ejemplo:
+#   GET /api/pedidos/5  -> strip "/api/pedidos" -> "/5" -> http://mcsv-pedidos:8080/pedidos/5
+_format_version: "3.0"
+
+services:
+  - name: mcsv-pedidos
+    url: http://mcsv-pedidos:8080/pedidos
+    routes:
+      - name: pedidos-route
+        paths:
+          - /api/pedidos
+        strip_path: true
+
+  - name: mcsv-inventario
+    url: http://mcsv-inventario:8080/productos
+    routes:
+      - name: productos-route
+        paths:
+          - /api/productos
+        strip_path: true
+
+# CORS reemplaza el quarkus.http.cors.* que tenía el api-gateway: el frontend
+# Angular (localhost:4200) es el único origen habilitado a llamar a través de Kong.
+plugins:
+  - name: cors
+    config:
+      origins:
+        - http://localhost:4200
+      methods:
+        - GET
+        - POST
+        - OPTIONS
+      headers:
+        - Content-Type
+      credentials: false
